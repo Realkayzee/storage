@@ -7,8 +7,8 @@
 #[starknet::interface]
 trait IStorage<TContractState> {
     fn store(ref self: TContractState, book_name: felt252);
-    fn delete(ref self:TContractState, book_id: u256);
-    fn check_book_by_id(self: @TContractState, book_id: u256) -> felt252;
+    fn delete(ref self:TContractState, book_id: felt252);
+    fn check_book_by_id(self: @TContractState, book_id: felt252) -> felt252;
 }
 
 #[starknet::contract]
@@ -28,20 +28,20 @@ mod Storage {
     struct StoredBook {
         caller: ContractAddress,
         book_name: felt252,
-        book_id: u256,
+        book_id: felt252,
     }
 
     #[derive(Drop, starknet::Event)]
     struct DeletedBook {
         caller: ContractAddress,
-        book_id: u256,
+        book_id: felt252,
     }
 
     // Contract storage
     #[storage]
     struct Storage {
-        store_book: LegacyMap::<(ContractAddress, u256), felt252>,
-        uid: u256,
+        store_book: LegacyMap::<(ContractAddress, felt252), felt252>,
+        uid: felt252,
     }
 
     #[constructor]
@@ -67,7 +67,7 @@ mod Storage {
             }));
         }
 
-        fn delete(ref self: ContractState, book_id: u256) {
+        fn delete(ref self: ContractState, book_id: felt252) {
             // when user achieved their target they definitely want to remove
             // the book from the list of bookmarked books
             let caller = get_caller_address();
@@ -80,7 +80,7 @@ mod Storage {
 
         }
 
-        fn check_book_by_id(self: @ContractState, book_id: u256) -> felt252 {
+        fn check_book_by_id(self: @ContractState, book_id: felt252) -> felt252 {
             let caller = get_caller_address();
             let book_name = self.store_book.read((caller, book_id));
 
@@ -88,3 +88,5 @@ mod Storage {
         }
     }
 }
+
+// Contract address -> 0x5915d2e2511856b2f9371040049c73cd13b8ae923c3c8069099f849ec3068fa
