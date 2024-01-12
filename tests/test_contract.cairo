@@ -1,43 +1,51 @@
+use snforge_std::{ declare, ContractClassTrait };
 use starknet::ContractAddress;
+use storage::{ IStorageDispatcher, IStorageDispatcherTrait };
 
-use snforge_std::{declare, ContractClassTrait};
-
-use storage::IHelloStarknetSafeDispatcher;
-use storage::IHelloStarknetSafeDispatcherTrait;
 
 fn deploy_contract(name: felt252) -> ContractAddress {
-    let contract = declare(name);
-    contract.deploy(@ArrayTrait::new()).unwrap()
+    let storage_contract = declare(name);
+    let contract_deployed = storage_contract.deploy(@ArrayTrait::new()).unwrap();
+
+    contract_deployed
 }
 
 #[test]
-fn test_increase_balance() {
-    let contract_address = deploy_contract('HelloStarknet');
+fn test_store() {
+    let contract_address = deploy_contract('Storage');
 
-    let safe_dispatcher = IHelloStarknetSafeDispatcher { contract_address };
+    let storage = IStorageDispatcher { contract_address };
 
-    let balance_before = safe_dispatcher.get_balance().unwrap();
-    assert(balance_before == 0, 'Invalid balance');
+    // we want to bookmark the story book akhila and the bee
 
-    safe_dispatcher.increase_balance(42).unwrap();
+    let _name = 'Akhila and the bee';
+    storage.store(_name);
 
-    let balance_after = safe_dispatcher.get_balance().unwrap();
-    assert(balance_after == 42, 'Invalid balance');
+    let check_book = storage.check_book_by_id(1);
+
+    assert(check_book == _name, 'Invalid');
 }
 
 #[test]
-fn test_cannot_increase_balance_with_zero_value() {
-    let contract_address = deploy_contract('HelloStarknet');
+fn test_delete() {
+    let contract_address = deploy_contract('Storage');
+    let storage = IStorageDispatcher { contract_address };
 
-    let safe_dispatcher = IHelloStarknetSafeDispatcher { contract_address };
+    // we want to create and delete a bookmarked novel
+    // and check if it has removed
 
-    let balance_before = safe_dispatcher.get_balance().unwrap();
-    assert(balance_before == 0, 'Invalid balance');
+    let _name = 'The killer';
 
-    match safe_dispatcher.increase_balance(0) {
-        Result::Ok(_) => panic_with_felt252('Should have panicked'),
-        Result::Err(panic_data) => {
-            assert(*panic_data.at(0) == 'Amount cannot be 0', *panic_data.at(0));
-        }
-    };
+    // store the novel
+    storage.store(_name);
+    let check_book = storage.check_book_by_id(1);
+
+    assert(check_book == _name, 'Invalid');
+
+    // delete the stored novel
+    storage.delete(1);
+    // check the storage after deleting
+    let check_book = storage.check_book_by_id(1);
+
+    assert(check_book == '', 'Book not deleted from storage');
 }
