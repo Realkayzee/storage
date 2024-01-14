@@ -18,7 +18,6 @@ trait IStorage<TContractState> {
 #[starknet::contract]
 mod Storage {
     use core::array::ArrayTrait;
-use core::starknet::event::EventEmitter;
     use starknet::{ContractAddress, get_caller_address};
 
     // contract event
